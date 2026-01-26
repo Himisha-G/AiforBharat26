@@ -41,7 +41,7 @@ A voice-first web application for local vendors and customers to communicate acr
 ## Supported Languages
 - Hindi (हिंदी)
 - English
-- Tamil (தமிழ்)
+- Tamil (தமிழ्)
 
 ## Voice Features
 - Browser-based speech recognition

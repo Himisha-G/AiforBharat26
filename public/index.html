@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Assistant</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🗣️ Vendor Assistant</h1>
+            <p>Voice-first communication & price helper</p>
+        </header>
+
+        <div class="language-selector">
+            <label>Your Language:</label>
+            <select id="sourceLang">
+                <option value="hi">हिंदी (Hindi)</option>
+                <option value="en">English</option>
+                <option value="ta">தமிழ் (Tamil)</option>
+            </select>
+            
+            <label>Reply in:</label>
+            <select id="targetLang">
+                <option value="en">English</option>
+                <option value="hi">हिंदी (Hindi)</option>
+                <option value="ta">தமிழ் (Tamil)</option>
+            </select>
+        </div>
+
+        <div class="chat-container">
+            <div id="chatDisplay" class="chat-display">
+                <div class="welcome-message">
+                    <p>👋 Welcome! Ask for prices or chat in any language.</p>
+                    <p>Try: "Aaj aloo ka rate kya hai?" or "What's the price of onions?"</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="voice-controls">
+                <button id="micBtn" class="mic-btn">
+                    <span class="mic-icon">🎤</span>
+                    <span class="mic-text">Tap to Speak</span>
+                </button>
+                <div id="listeningIndicator" class="listening-indicator hidden">
+                    <div class="pulse"></div>
+                    <span>Listening...</span>
+                </div>
+            </div>
+            
+            <div class="text-input">
+                <input type="text" id="textInput" placeholder="Or type your message...">
+                <button id="sendBtn">Send</button>
+            </div>
+        </div>
+
+        <div class="quick-examples">
+            <h3>Quick Examples:</h3>
+            <button class="example-btn" data-text="Aaj aloo ka rate kya hai?">🥔 Potato price</button>
+            <button class="example-btn" data-text="Pyaz kitne ka hai?">🧅 Onion price</button>
+            <button class="example-btn" data-text="Namaste, kaise hain aap?">👋 Greeting</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

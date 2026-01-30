@@ -1,110 +1,118 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const cors = require('cors');
-const path = require('path');
+const express = require("express");
+const http = require("http");
+const socketIo = require("socket.io");
+const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
+
 const io = socketIo(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+  },
 });
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static("public"));
 
-// Mock price data for common items
+/* -------------------------------
+   ✅ Price Data (Hindi + English)
+-------------------------------- */
 const cityPrices = {
-  'aloo': { name: 'आलू', price: '24-26', unit: 'kg' },
-  'potato': { name: 'आलू', price: '24-26', unit: 'kg' },
-  'pyaz': { name: 'प्याज', price: '18-22', unit: 'kg' },
-  'onion': { name: 'प्याज', price: '18-22', unit: 'kg' },
-  'tamatar': { name: 'टमाटर', price: '30-35', unit: 'kg' },
-  'tomato': { name: 'टमाटर', price: '30-35', unit: 'kg' },
-  'chawal': { name: 'चावल', price: '45-50', unit: 'kg' },
-  'rice': { name: 'चावल', price: '45-50', unit: 'kg' },
-  'dal': { name: 'दाल', price: '80-90', unit: 'kg' },
-  'lentils': { name: 'दाल', price: '80-90', unit: 'kg' }
+  potato: { hindi: "आलू", price: 25, unit: "kg" },
+  onion: { hindi: "प्याज", price: 20, unit: "kg" },
+  tomato: { hindi: "टमाटर", price: 32, unit: "kg" },
+  rice: { hindi: "चावल", price: 48, unit: "kg" },
+  dal: { hindi: "दाल", price: 85, unit: "kg" },
 };
 
-// Mock translation function (in real app, use Google Translate API)
-function translateText(text, targetLang) {
-  // Simple mock translations for demo
-  const translations = {
-    'hi': {
-      'Hello': 'नमस्ते',
-      'How can I help you?': 'मैं आपकी कैसे मदद कर सकता हूं?',
-      'Price today is': 'आज की कीमत है'
-    },
-    'en': {
-      'नमस्ते': 'Hello',
-      'आज': 'today',
-      'कीमत': 'price'
-    }
-  };
-  
-  return translations[targetLang]?.[text] || text;
-}
+/* -------------------------------
+   ✅ Detect Item from Message
+-------------------------------- */
+function detectItem(message) {
+  const lower = message.toLowerCase();
 
-// Price query handler
-function handlePriceQuery(message, lang = 'hi') {
-  const lowerMessage = message.toLowerCase();
-  
-  for (const [key, item] of Object.entries(cityPrices)) {
-    if (lowerMessage.includes(key)) {
-      if (lang === 'hi') {
-        return `आज शहर में ${item.name} का रेट लगभग ₹${item.price} प्रति ${item.unit} है।`;
-      } else {
-        return `Today's city rate for ${key} is approximately ₹${item.price} per ${item.unit}.`;
-      }
+  for (let key in cityPrices) {
+    const item = cityPrices[key];
+
+    // Match English keyword OR Hindi word
+    if (lower.includes(key) || message.includes(item.hindi)) {
+      return { key, ...item };
     }
   }
-  
-  if (lang === 'hi') {
-    return 'माफ करें, इस वस्तु की कीमत उपलब्ध नहीं है।';
-  } else {
-    return 'Sorry, price information for this item is not available.';
-  }
+  return null;
 }
 
-// Socket connection handling
-io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+/* -------------------------------
+   ✅ Extract Quantity (like 2 kg)
+-------------------------------- */
+function extractQuantity(message) {
+  const match = message.match(/(\d+)\s*(kg|किलो)/i);
+  if (match) {
+    return parseInt(match[1]);
+  }
+  return 1; // Default quantity = 1kg
+}
 
-  socket.on('translate-message', (data) => {
-    const { message, sourceLang, targetLang } = data;
-    
-    // Check if it's a price query
-    const priceResponse = handlePriceQuery(message, targetLang);
-    if (priceResponse !== 'Sorry, price information for this item is not available.' && 
-        priceResponse !== 'माफ करें, इस वस्तु की कीमत उपलब्ध नहीं है।') {
-      socket.emit('translation-result', {
-        originalMessage: message,
-        translatedMessage: priceResponse,
-        isPrice: true
-      });
-      return;
-    }
-    
-    // Regular translation
-    const translated = translateText(message, targetLang);
-    socket.emit('translation-result', {
-      originalMessage: message,
-      translatedMessage: translated,
-      isPrice: false
-    });
-  });
+/* -------------------------------
+   ✅ Main Bot Reply Function
+-------------------------------- */
+function botReply(message, lang) {
+  const item = detectItem(message);
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+  if (!item) {
+    return lang === "hi"
+      ? "माफ़ कीजिए, इस वस्तु की कीमत उपलब्ध नहीं है।"
+      : "Sorry, price information for this item is not available.";
+  }
+
+  const qty = extractQuantity(message);
+  const totalCost = qty * item.price;
+
+  // If user asked for total cost
+  if (message.includes("कितना") || message.includes("total") || message.includes("price")) {
+    return lang === "hi"
+      ? `${qty} किलो ${item.hindi} की कीमत लगभग ₹${totalCost} होगी (₹${item.price}/kg)।`
+      : `The cost of ${qty} kg ${item.key} will be around ₹${totalCost} (₹${item.price}/kg).`;
+  }
+
+  // Normal rate response
+  return lang === "hi"
+    ? `आज शहर में ${item.hindi} का रेट लगभग ₹${item.price} प्रति किलो है।`
+    : `Today's city rate for ${item.key} is approximately ₹${item.price} per kg.`;
+}
+
+/* -------------------------------
+   ✅ Socket Connection
+-------------------------------- */
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("translate-message", (data) => {
+  console.log("📩 Received:", data);
+
+  const { message, targetLang } = data;
+  const response = botReply(message, targetLang);
+
+  console.log("🤖 Sending reply:", response);
+
+  socket.emit("translation-result", {
+    translatedMessage: response,
   });
 });
 
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+/* -------------------------------
+   ✅ Start Server
+-------------------------------- */
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });

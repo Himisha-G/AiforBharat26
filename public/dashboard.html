@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Assistant</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ✅ DASHBOARD WRAPPER -->
+  <div class="dashboard">
+
+    <!-- ✅ LEFT PANEL: Price Dashboard -->
+    <div class="panel left">
+      <h2>📍 Today’s Mandi Rates</h2>
+
+      <ul class="price-list">
+        <li>🥔 आलू — ₹25/kg</li>
+        <li>🧅 प्याज — ₹20/kg</li>
+        <li>🍅 टमाटर — ₹32/kg</li>
+        <li>🌾 चावल — ₹48/kg</li>
+        <li>🥣 दाल — ₹85/kg</li>
+      </ul>
+
+      <p class="note">Updated daily (demo data)</p>
+    </div>
+
+    <!-- ✅ CENTER PANEL: Chat Assistant -->
+    <div class="panel center">
+      <header>
+        <h1>🗣️ Vendor Assistant</h1>
+        <p>Voice-first communication & price helper</p>
+      </header>
+
+      <!-- Language Selector -->
+      <div class="language-selector">
+        <label>Your Language:</label>
+        <select id="sourceLang">
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="en">English</option>
+          <option value="ta">தமிழ் (Tamil)</option>
+        </select>
+
+        <label>Reply in:</label>
+        <select id="targetLang">
+          <option value="en">English</option>
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="ta">தமிழ் (Tamil)</option>
+        </select>
+      </div>
+      <label style="margin-left:15px;">
+        🔊 Voice Reply
+        <input type="checkbox" id="voiceToggle" checked />
+      </label>
+
+      <!-- Chat Display -->
+      <div class="chat-container">
+        <div id="chatDisplay" class="chat-display">
+          <div class="welcome-message">
+            <p>👋 Welcome! Ask for mandi prices or calculate cost.</p>
+            <p>Try: "2 kilo pyaz kitna hoga?"</p>
+          </div>
+        </div>
+      </div>
+      <button class="download-btn" onclick="downloadChat()">
+        ⬇ Download Chat History
+      </button>
+
+      <!-- Input Section -->
+      <div class="input-section">
+        <div class="voice-controls">
+          <button id="micBtn" class="mic-btn">
+            <span class="mic-icon">🎤</span>
+            <span class="mic-text">Tap to Speak</span>
+          </button>
+
+          <div id="listeningIndicator" class="listening-indicator hidden">
+            <div class="pulse"></div>
+            <span>Listening...</span>
+          </div>
+        </div>
+
+        <div class="text-input">
+          <input type="text" id="textInput" placeholder="Type your message..." />
+          <button id="sendBtn">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ RIGHT PANEL: Smart Tools -->
+    <div class="panel right">
+      <h2>🧾 Smart Tools</h2>
+
+      <div class="tool-box">
+        <p>✅ Price Query</p>
+        <p>✅ Quantity Cost Calculator</p>
+        <p>✅ Multilingual Support</p>
+        <p>✅ Voice Assistant</p>
+      </div>
+
+      <h3>Quick Examples</h3>
+      <button class="example-btn" data-text="Aaj aloo ka rate kya hai?">🥔 Potato</button>
+      <button class="example-btn" data-text="2 kilo pyaz kitna hoga?">🧅 Total Cost</button>
+      <button class="example-btn" data-text="Namaste!">👋 Greeting</button>
+    </div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+
+</body>
+
+</html>

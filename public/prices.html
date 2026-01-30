@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live Mandi Prices</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="home-body">
+
+  <div class="panel center mandi-page">
+
+    <!-- Header -->
+    <h1 class="mandi-title">📊 Live Mandi Market Prices</h1>
+    <p class="mandi-subtitle">
+      Real-time style price dashboard for Indian vendors & farmers
+    </p>
+
+    <!-- Info Row -->
+    <div class="info-row">
+      <span class="badge">📍 Azadpur Mandi (Demo)</span>
+      <span class="badge">🕒 Updated: <span id="time"></span></span>
+    </div>
+
+    <!-- Price Cards -->
+    <div class="price-grid">
+
+      <div class="price-card">
+        <h2>🥔 आलू</h2>
+        <p class="price">₹25/kg</p>
+        <p class="trend up">↑ Demand Rising</p>
+      </div>
+
+      <div class="price-card">
+        <h2>🧅 प्याज</h2>
+        <p class="price">₹20/kg</p>
+        <p class="trend down">↓ Supply Increased</p>
+      </div>
+
+      <div class="price-card">
+        <h2>🍅 टमाटर</h2>
+        <p class="price">₹32/kg</p>
+        <p class="trend up">↑ Weather Impact</p>
+      </div>
+
+      <div class="price-card">
+        <h2>🌾 चावल</h2>
+        <p class="price">₹48/kg</p>
+        <p class="trend stable">Stable Market</p>
+      </div>
+
+      <div class="price-card">
+        <h2>🥣 दाल</h2>
+        <p class="price">₹85/kg</p>
+        <p class="trend up">↑ Festival Demand</p>
+      </div>
+
+    </div>
+
+    <!-- AI Recommendation -->
+    <div class="ai-box">
+      <h2>🤖 AI Market Suggestion</h2>
+      <p>
+        📌 Vendors should stock up on <b>Onion</b> today as prices are falling.<br>
+        📈 Tomato prices may rise further due to low crop arrivals.<br>
+        ✅ Best selling commodity today: <b>Potato</b>
+      </p>
+    </div>
+
+    <!-- Navigation -->
+    <a href="index.html" class="back-btn">⬅ Back Home</a>
+
+  </div>
+
+  <script>
+    // Show current update time
+    document.getElementById("time").innerText =
+      new Date().toLocaleTimeString();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Customer Billing</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="home-body">
+
+  <div class="billing-container">
+
+    <!-- Header -->
+    <h1 class="billing-title">🧾 Smart Customer Billing</h1>
+    <p class="billing-subtitle">
+      Add multiple items for one customer and generate total bill instantly
+    </p>
+
+    <!-- Billing Card -->
+    <div class="billing-card">
+
+      <!-- Input Row -->
+      <div class="billing-inputs">
+
+        <div class="field">
+          <label>🛒 Select Item</label>
+          <select id="item">
+            <option value="25">🥔 Potato (₹25/kg)</option>
+            <option value="20">🧅 Onion (₹20/kg)</option>
+            <option value="32">🍅 Tomato (₹32/kg)</option>
+            <option value="48">🌾 Rice (₹48/kg)</option>
+            <option value="85">🥣 Dal (₹85/kg)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>⚖ Quantity (kg)</label>
+          <input id="qty" type="number" placeholder="Enter kg" />
+        </div>
+
+        <div class="field">
+          <button class="add-btn" onclick="addItem()">➕ Add Item</button>
+        </div>
+
+      </div>
+
+      <!-- Bill Section -->
+      <h2 class="bill-heading">📋 Current Customer Bill</h2>
+
+      <div class="bill-box">
+        <ul id="billList"></ul>
+      </div>
+
+      <!-- Total -->
+      <div class="total-box">
+        <h2 id="totalBill">Total: ₹0</h2>
+      </div>
+
+      <!-- Print Button -->
+      <button class="print-btn" onclick="window.print()">
+        🖨 Print Invoice
+      </button>
+
+      <!-- Buttons -->
+      <div class="billing-actions">
+        <button class="new-btn" onclick="newCustomer()">🆕 New Customer</button>
+        <a href="index.html" class="back-btn">⬅ Back Home</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Script -->
+  <script>
+    let total = 0;
+
+    function addItem() {
+      let itemDropdown = document.getElementById("item");
+      let price = parseInt(itemDropdown.value);
+
+      let itemName =
+        itemDropdown.options[itemDropdown.selectedIndex].text;
+
+      let qty = parseFloat(document.getElementById("qty").value);
+
+      if (!qty || qty <= 0) {
+        alert("⚠ Please enter a valid quantity!");
+        return;
+      }
+
+      let cost = price * qty;
+      total += cost;
+
+      // Add item row
+      let li = document.createElement("li");
+      li.innerHTML = `
+        <span>${itemName}</span>
+        <span>${qty} kg</span>
+        <span>₹${cost}</span>
+      `;
+
+      document.getElementById("billList").appendChild(li);
+
+      // Update total
+      document.getElementById("totalBill").innerText =
+        "Total: ₹" + total;
+
+      // Clear quantity input
+      document.getElementById("qty").value = "";
+    }
+
+    function newCustomer() {
+      total = 0;
+      document.getElementById("billList").innerHTML = "";
+      document.getElementById("totalBill").innerText =
+        "Total: ₹0";
+
+      alert("✅ New customer bill started!");
+    }
+  </script>
+
+</body>
+</html>

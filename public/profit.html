@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Profit Estimator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="home-body">
+
+  <div class="profit-container">
+
+    <!-- Header -->
+    <h1 class="profit-title">💰 AI Vendor Profit Estimator</h1>
+    <p class="profit-subtitle">
+      Smart profit prediction tool for mandi vendors & small businesses
+    </p>
+
+    <!-- Main Card -->
+    <div class="profit-card">
+
+      <!-- Inputs -->
+      <div class="profit-inputs">
+
+        <div class="field">
+          <label>📉 Buying Price (₹/kg)</label>
+          <input id="buy" type="number" placeholder="Eg: 20" />
+        </div>
+
+        <div class="field">
+          <label>📈 Selling Price (₹/kg)</label>
+          <input id="sell" type="number" placeholder="Eg: 30" />
+        </div>
+
+        <div class="field">
+          <label>⚖ Quantity Sold (kg/day)</label>
+          <input id="qty" type="number" placeholder="Eg: 50" />
+        </div>
+
+      </div>
+
+      <!-- Button -->
+      <button class="profit-btn" onclick="calcProfit()">
+        🤖 Generate AI Profit Insight
+      </button>
+
+      <!-- Output -->
+      <div id="profitOutput" class="profit-output hidden"></div>
+
+      <!-- Back -->
+      <a href="index.html" class="back-btn">⬅ Back Home</a>
+    </div>
+  </div>
+
+  <script>
+    function calcProfit() {
+      let buy = parseFloat(document.getElementById("buy").value);
+      let sell = parseFloat(document.getElementById("sell").value);
+      let qty = parseFloat(document.getElementById("qty").value);
+
+      if (!buy || !sell || !qty) {
+        alert("Please fill all fields!");
+        return;
+      }
+
+      let profitPerKg = sell - buy;
+      let dailyProfit = profitPerKg * qty;
+      let margin = ((profitPerKg / buy) * 100).toFixed(1);
+
+      let suggestion = "";
+
+      if (profitPerKg > 10) {
+        suggestion = "✅ Excellent margin! Stock more today.";
+      } else if (profitPerKg > 5) {
+        suggestion = "👍 Good profit. Continue selling steadily.";
+      } else if (profitPerKg > 0) {
+        suggestion = "⚠ Low margin. Try negotiating buying price.";
+      } else {
+        suggestion = "❌ Loss detected. Avoid selling at this price.";
+      }
+
+      document.getElementById("profitOutput").classList.remove("hidden");
+
+      document.getElementById("profitOutput").innerHTML = `
+        <h2>📊 AI Profit Report</h2>
+        <p><b>Profit per kg:</b> ₹${profitPerKg}</p>
+        <p><b>Profit Margin:</b> ${margin}%</p>
+        <p><b>Estimated Daily Profit:</b> ₹${dailyProfit}</p>
+
+        <div class="ai-suggestion">
+          🤖 AI Suggestion: <br><b>${suggestion}</b>
+        </div>
+      `;
+    }
+  </script>
+
+</body>
+</html>

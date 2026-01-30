@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Auto Price Trends</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="home-body">
+
+  <div class="panel center">
+    <h1>📈 AI Auto Mandi Trend Dashboard</h1>
+    <p>Trends are generated automatically from live-style mandi signals</p>
+
+    <div id="trendBox"></div>
+
+    <a href="index.html" class="back-btn">⬅ Back Home</a>
+  </div>
+
+  <script>
+    // ✅ Commodity Base Prices
+    const commodities = [
+      { name: "🥔 Potato", base: 25 },
+      { name: "🧅 Onion", base: 20 },
+      { name: "🍅 Tomato", base: 35 },
+      { name: "🌾 Rice", base: 50 },
+      { name: "🥣 Dal", base: 90 }
+    ];
+
+    function generateTrend() {
+      const trendBox = document.getElementById("trendBox");
+      trendBox.innerHTML = "";
+
+      commodities.forEach(item => {
+        // Random daily fluctuation
+        let change = Math.floor(Math.random() * 10 - 5); // -5 to +5
+        let newPrice = item.base + change;
+
+        // Decide trend direction
+        let symbol = "Stable";
+        if (change > 2) symbol = "↑ Rising";
+        else if (change < -2) symbol = "↓ Falling";
+
+        // Create AI Insight Card
+        const div = document.createElement("div");
+        div.className = "trend-card";
+        div.innerHTML = `
+          <b>${item.name}</b><br>
+          Price Today: ₹${newPrice}/kg <br>
+          Trend: <span>${symbol}</span><br>
+          <i>AI Insight: Market demand & arrivals affecting price</i>
+        `;
+
+        trendBox.appendChild(div);
+      });
+    }
+
+    // Auto-generate trends daily-style
+    generateTrend();
+    const advice = document.createElement("div");
+    advice.className = "ai-suggestion-box";
+    advice.innerHTML = `
+    🤖 AI Suggestion: <b>Buy onions today (price falling)</b> and 
+    <b>Sell tomatoes (price rising)</b>.
+    `;
+    trendBox.appendChild(advice);
+
+  </script>
+
+</body>
+</html>

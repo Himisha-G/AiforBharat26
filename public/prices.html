@@ -14,57 +14,28 @@
     <!-- Header -->
     <h1 class="mandi-title">📊 Live Mandi Market Prices</h1>
     <p class="mandi-subtitle">
-      Real-time style price dashboard for Indian vendors & farmers
+      Government verified daily mandi prices for Indian vendors & farmers
     </p>
 
     <!-- Info Row -->
     <div class="info-row">
-      <span class="badge">📍 Azadpur Mandi (Demo)</span>
+      <span class="badge">🇮🇳 Source: data.gov.in API</span>
       <span class="badge">🕒 Updated: <span id="time"></span></span>
     </div>
 
-    <!-- Price Cards -->
-    <div class="price-grid">
+    <!-- Loading Text -->
+    <h3 id="loadingText" style="margin-top:20px;">
+      ⏳ Fetching live mandi prices...
+    </h3>
 
-      <div class="price-card">
-        <h2>🥔 आलू</h2>
-        <p class="price">₹25/kg</p>
-        <p class="trend up">↑ Demand Rising</p>
-      </div>
+    <!-- LIVE Price Cards -->
+    <div id="priceGrid" class="price-grid"></div>
 
-      <div class="price-card">
-        <h2>🧅 प्याज</h2>
-        <p class="price">₹20/kg</p>
-        <p class="trend down">↓ Supply Increased</p>
-      </div>
-
-      <div class="price-card">
-        <h2>🍅 टमाटर</h2>
-        <p class="price">₹32/kg</p>
-        <p class="trend up">↑ Weather Impact</p>
-      </div>
-
-      <div class="price-card">
-        <h2>🌾 चावल</h2>
-        <p class="price">₹48/kg</p>
-        <p class="trend stable">Stable Market</p>
-      </div>
-
-      <div class="price-card">
-        <h2>🥣 दाल</h2>
-        <p class="price">₹85/kg</p>
-        <p class="trend up">↑ Festival Demand</p>
-      </div>
-
-    </div>
-
-    <!-- AI Recommendation -->
+    <!-- AI Recommendation Box -->
     <div class="ai-box">
       <h2>🤖 AI Market Suggestion</h2>
-      <p>
-        📌 Vendors should stock up on <b>Onion</b> today as prices are falling.<br>
-        📈 Tomato prices may rise further due to low crop arrivals.<br>
-        ✅ Best selling commodity today: <b>Potato</b>
+      <p id="aiSuggestion">
+        Loading AI insights...
       </p>
     </div>
 
@@ -73,10 +44,75 @@
 
   </div>
 
+  <!-- Script -->
   <script>
     // Show current update time
     document.getElementById("time").innerText =
       new Date().toLocaleTimeString();
+
+    /* -----------------------------
+       ✅ Load LIVE Prices from Server
+    ------------------------------ */
+    async function loadLivePrices() {
+      const grid = document.getElementById("priceGrid");
+      const loading = document.getElementById("loadingText");
+
+      try {
+        // Fetch live mandi prices from backend route
+        const res = await fetch("/live-prices");
+        const data = await res.json();
+
+        loading.style.display = "none";
+        grid.innerHTML = "";
+
+        if (!data || data.length === 0) {
+          grid.innerHTML = "<p>No live price data available.</p>";
+          return;
+        }
+
+        // Generate cards dynamically
+        data.forEach((item) => {
+          grid.innerHTML += `
+            <div class="price-card">
+              <h2>🌾 ${item.commodity}</h2>
+              <p class="price">
+              ₹${item.modal_price} / quintal
+              <br>
+              (~₹${(item.modal_price / 100).toFixed(1)} per kg)
+              </p>
+
+              <p class="trend">📍 ${item.market}, ${item.state}</p>
+              <p class="trend up">📅 ${item.arrival_date}</p>
+            </div>
+          `;
+        });
+
+        /* -----------------------------
+           ✅ AI Auto Suggestion Logic
+        ------------------------------ */
+        let suggestionText =
+          "📌 Best commodity today: " +
+          data[0].commodity +
+          " (high demand).<br>";
+
+        suggestionText +=
+          "📉 Vendors can buy low-priced items like " +
+          data[data.length - 1].commodity +
+          ".<br>";
+
+        suggestionText +=
+          "✅ Prices are updated directly from Government mandi records.";
+
+        document.getElementById("aiSuggestion").innerHTML = suggestionText;
+
+      } catch (err) {
+        loading.innerText = "❌ Failed to load live mandi prices.";
+        console.log("Error:", err);
+      }
+    }
+
+    // Load prices when page opens
+    loadLivePrices();
   </script>
 
 </body>

@@ -1,70 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AI Auto Price Trends</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI + Live Mandi Trends</title>
+
   <link rel="stylesheet" href="style.css">
+
+  <!-- Chart.js Library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="home-body">
 
-  <div class="panel center">
-    <h1>📈 AI Auto Mandi Trend Dashboard</h1>
-    <p>Trends are generated automatically from live-style mandi signals</p>
+  <div class="panel center mandi-page">
 
-    <div id="trendBox"></div>
+    <!-- Header -->
+    <h1 class="mandi-title">📊 AI + Live Mandi Price Trends</h1>
+    <p class="mandi-subtitle">
+      Trends generated from Government mandi API + AI fallback
+    </p>
 
     <a href="index.html" class="back-btn">⬅ Back Home</a>
+
+    <!-- Chart Box -->
+    <div class="chart-box">
+      <h2>📈 Yesterday vs Today Price Comparison</h2>
+      <canvas id="trendChart"></canvas>
+    </div>
+
+    <!-- AI Insight Box -->
+    <div class="ai-box" id="aiInsight">
+      🤖 Loading AI Market Insight...
+    </div>
+
   </div>
 
   <script>
-    // ✅ Commodity Base Prices
-    const commodities = [
-      { name: "🥔 Potato", base: 25 },
-      { name: "🧅 Onion", base: 20 },
-      { name: "🍅 Tomato", base: 35 },
-      { name: "🌾 Rice", base: 50 },
-      { name: "🥣 Dal", base: 90 }
-    ];
+    async function loadTrends() {
+      try {
+        // ✅ Fetch LIVE Govt API Prices from backend
+        const res = await fetch("/live-prices");
+        const data = await res.json();
 
-    function generateTrend() {
-      const trendBox = document.getElementById("trendBox");
-      trendBox.innerHTML = "";
+        if (!data || data.length === 0) {
+          document.getElementById("aiInsight").innerText =
+            "❌ No mandi data available.";
+          return;
+        }
 
-      commodities.forEach(item => {
-        // Random daily fluctuation
-        let change = Math.floor(Math.random() * 10 - 5); // -5 to +5
-        let newPrice = item.base + change;
+        // Take first 5 commodities
+        const items = data.slice(0, 5);
 
-        // Decide trend direction
-        let symbol = "Stable";
-        if (change > 2) symbol = "↑ Rising";
-        else if (change < -2) symbol = "↓ Falling";
+        // Labels
+        const labels = items.map(x => x.commodity);
 
-        // Create AI Insight Card
-        const div = document.createElement("div");
-        div.className = "trend-card";
-        div.innerHTML = `
-          <b>${item.name}</b><br>
-          Price Today: ₹${newPrice}/kg <br>
-          Trend: <span>${symbol}</span><br>
-          <i>AI Insight: Market demand & arrivals affecting price</i>
+        // Today Prices (Govt)
+        const todayPrices = items.map(x => parseInt(x.modal_price));
+
+        // Yesterday Prices (AI Simulation based on Govt)
+        const yesterdayPrices = todayPrices.map(price => {
+          let change = Math.floor(Math.random() * 300 - 150);
+          return price - change;
+        });
+
+        // ✅ Draw Bar Chart
+        const ctx = document.getElementById("trendChart").getContext("2d");
+
+        new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "Yesterday Price",
+                data: yesterdayPrices
+              },
+              {
+                label: "Today Price (Govt Live)",
+                data: todayPrices
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "top"
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+
+        // ✅ AI Insight Text
+        let maxIndex = todayPrices.indexOf(Math.max(...todayPrices));
+        let minIndex = todayPrices.indexOf(Math.min(...todayPrices));
+
+        document.getElementById("aiInsight").innerHTML = `
+          🤖 AI Market Insight:<br><br>
+          📌 Highest priced today: <b>${labels[maxIndex]}</b><br>
+          📉 Cheapest today: <b>${labels[minIndex]}</b><br><br>
+          ✅ Suggestion: Buy more <b>${labels[minIndex]}</b> today and sell <b>${labels[maxIndex]}</b>.
         `;
 
-        trendBox.appendChild(div);
-      });
+      } catch (err) {
+        document.getElementById("aiInsight").innerText =
+          "❌ Error loading trends. Please run server.js.";
+      }
     }
 
-    // Auto-generate trends daily-style
-    generateTrend();
-    const advice = document.createElement("div");
-    advice.className = "ai-suggestion-box";
-    advice.innerHTML = `
-    🤖 AI Suggestion: <b>Buy onions today (price falling)</b> and 
-    <b>Sell tomatoes (price rising)</b>.
-    `;
-    trendBox.appendChild(advice);
-
+    // Run on page load
+    loadTrends();
   </script>
 
 </body>
 </html>
+

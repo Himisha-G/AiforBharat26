@@ -1,11 +1,15 @@
 const express = require("express");
 const http = require("http");
-const socketIo = require("socket.io");
 const cors = require("cors");
+const axios = require("axios");
+const socketIo = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
 
+/* ===========================
+   SOCKET.IO SETUP
+=========================== */
 const io = socketIo(server, {
   cors: {
     origin: "*",
@@ -17,102 +21,171 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
-/* -------------------------------
-   ✅ Price Data (Hindi + English)
--------------------------------- */
-const cityPrices = {
-  potato: { hindi: "आलू", price: 25, unit: "kg" },
-  onion: { hindi: "प्याज", price: 20, unit: "kg" },
-  tomato: { hindi: "टमाटर", price: 32, unit: "kg" },
-  rice: { hindi: "चावल", price: 48, unit: "kg" },
-  dal: { hindi: "दाल", price: 85, unit: "kg" },
-};
+/* ===========================
+   DATA.GOV API CONFIG
+=========================== */
+const API_KEY =
+  "579b464db66ec23bdd000001ba43ca3465b84b38675f74a10ca5194c";
 
-/* -------------------------------
-   ✅ Detect Item from Message
--------------------------------- */
-function detectItem(message) {
-  const lower = message.toLowerCase();
+const RESOURCE_ID =
+  "9ef84268-d588-465a-a308-a864a43d0070";
 
-  for (let key in cityPrices) {
-    const item = cityPrices[key];
+/* ===========================
+   LIVE PRICES API ROUTE
+=========================== */
+app.get("/live-prices", async (req, res) => {
+  try {
+    const url =
+      `https://api.data.gov.in/resource/${RESOURCE_ID}` +
+      `?api-key=${API_KEY}` +
+      `&format=json&limit=10`;
 
-    // Match English keyword OR Hindi word
-    if (lower.includes(key) || message.includes(item.hindi)) {
-      return { key, ...item };
+    const response = await axios.get(url);
+
+    if (!response.data.records || response.data.records.length === 0) {
+      throw new Error("No records found");
     }
+
+    const cleaned = response.data.records.map((item) => ({
+      commodity: item.commodity,
+      market: item.market,
+      state: item.state,
+      arrival_date: item.arrival_date,
+      modal_price: item.modal_price,
+    }));
+
+    res.json(cleaned);
+  } catch (err) {
+    console.log("❌ Live API Error:", err.message);
+
+    res.json([
+      {
+        commodity: "Potato (Demo)",
+        market: "Azadpur",
+        state: "Delhi",
+        modal_price: "2500",
+      },
+      {
+        commodity: "Onion (Demo)",
+        market: "Lasalgaon",
+        state: "Maharashtra",
+        modal_price: "2200",
+      },
+      {
+        commodity: "Tomato (Demo)",
+        market: "Kolar",
+        state: "Karnataka",
+        modal_price: "3000",
+      },
+    ]);
   }
-  return null;
-}
+});
 
-/* -------------------------------
-   ✅ Extract Quantity (like 2 kg)
--------------------------------- */
-function extractQuantity(message) {
-  const match = message.match(/(\d+)\s*(kg|किलो)/i);
-  if (match) {
-    return parseInt(match[1]);
-  }
-  return 1; // Default quantity = 1kg
-}
-
-/* -------------------------------
-   ✅ Main Bot Reply Function
--------------------------------- */
-function botReply(message, lang) {
-  const item = detectItem(message);
-
-  if (!item) {
-    return lang === "hi"
-      ? "माफ़ कीजिए, इस वस्तु की कीमत उपलब्ध नहीं है।"
-      : "Sorry, price information for this item is not available.";
-  }
-
-  const qty = extractQuantity(message);
-  const totalCost = qty * item.price;
-
-  // If user asked for total cost
-  if (message.includes("कितना") || message.includes("total") || message.includes("price")) {
-    return lang === "hi"
-      ? `${qty} किलो ${item.hindi} की कीमत लगभग ₹${totalCost} होगी (₹${item.price}/kg)।`
-      : `The cost of ${qty} kg ${item.key} will be around ₹${totalCost} (₹${item.price}/kg).`;
-  }
-
-  // Normal rate response
-  return lang === "hi"
-    ? `आज शहर में ${item.hindi} का रेट लगभग ₹${item.price} प्रति किलो है।`
-    : `Today's city rate for ${item.key} is approximately ₹${item.price} per kg.`;
-}
-
-/* -------------------------------
-   ✅ Socket Connection
--------------------------------- */
+/* ===========================
+   CHATBOT SOCKET FEATURE
+=========================== */
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  console.log("✅ User connected:", socket.id);
 
   socket.on("translate-message", (data) => {
-  console.log("📩 Received:", data);
+    let msg = data.message.toLowerCase().trim();
 
-  const { message, targetLang } = data;
-  const response = botReply(message, targetLang);
+    let reply =
+      "🤖 Vendor Assistant: Ask me mandi prices like 'Aloo ka rate?'";
 
-  console.log("🤖 Sending reply:", response);
+    // ✅ Potato / आलू
+    if (
+      msg.includes("aloo") ||
+      msg.includes("potato") ||
+      msg.includes("आलू")
+    ) {
+      reply = "🥔 Aaj Aloo ka rate approx ₹25/kg hai.";
+    }
 
-  socket.emit("translation-result", {
-    translatedMessage: response,
+    // ✅ Onion / प्याज
+    else if (
+      msg.includes("pyaz") ||
+      msg.includes("onion") ||
+      msg.includes("प्याज")
+    ) {
+      reply = "🧅 Aaj Pyaz ka rate approx ₹20/kg hai.";
+    }
+
+    // ✅ Tomato / टमाटर
+    else if (
+      msg.includes("tamatar") ||
+      msg.includes("tomato") ||
+      msg.includes("टमाटर")
+    ) {
+      reply = "🍅 Aaj Tamatar ka rate approx ₹32/kg hai.";
+    }
+
+    // ✅ Greeting
+    else if (
+      msg.includes("namaste") ||
+      msg.includes("hello") ||
+      msg.includes("नमस्ते")
+    ) {
+      reply = "🙏 Namaste! Main aapko mandi prices aur billing mein help kar sakta hoon.";
+    }
+
+    // Send reply back
+    socket.emit("translation-result", {
+      translatedMessage: reply,
+    });
   });
-});
-
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    console.log("❌ User disconnected");
   });
 });
 
-/* -------------------------------
-   ✅ Start Server
--------------------------------- */
-const PORT = process.env.PORT || 3000;
+
+/* ===========================
+   START SERVER
+=========================== */
+const PORT = 3000;
 server.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log("🚀 Server running at http://localhost:3000");
+});
+
+/* ===========================
+   ✅ BILLING PRICE ROUTE
+=========================== */
+
+app.get("/billing-items", async (req, res) => {
+  try {
+    const url =
+      `https://api.data.gov.in/resource/${RESOURCE_ID}` +
+      `?api-key=${API_KEY}` +
+      `&format=json&limit=20`;
+
+    const response = await axios.get(url);
+
+    if (!response.data.records || response.data.records.length === 0) {
+      throw new Error("No live records");
+    }
+
+    // Extract only useful items
+    const items = response.data.records.slice(0, 8).map((item) => ({
+      name: item.commodity,
+      price: item.modal_price, // Govt mandi price
+      market: item.market,
+      state: item.state,
+    }));
+
+    res.json(items);
+
+  } catch (err) {
+    console.log("❌ Billing API Error:", err.message);
+
+    // ✅ Fallback Demo Prices
+    res.json([
+      { name: "Potato", price: 2500 },
+      { name: "Onion", price: 2200 },
+      { name: "Tomato", price: 3000 },
+      { name: "Rice", price: 4800 },
+      { name: "Dal", price: 8500 },
+    ]);
+  }
 });

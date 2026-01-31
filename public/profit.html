@@ -3,96 +3,194 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AI Profit Estimator</title>
+  <title>AI Vendor Profit Estimator</title>
+
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body class="home-body">
 
+  <!-- 🌍 Language Selector -->
+  <div class="lang-bar">
+    🌍 Language:
+    <select id="langSelect" onchange="setLanguage()">
+      <option value="en">English</option>
+      <option value="hi">हिंदी</option>
+      <option value="ta">தமிழ்</option>
+    </select>
+  </div>
+
+  <!-- Main Container -->
   <div class="profit-container">
 
-    <!-- Header -->
-    <h1 class="profit-title">💰 AI Vendor Profit Estimator</h1>
-    <p class="profit-subtitle">
+    <!-- Title -->
+    <h1 class="profit-title" id="pageTitle">
+      💰 AI Vendor Profit Estimator
+    </h1>
+
+    <p class="profit-subtitle" id="pageSubtitle">
       Smart profit prediction tool for mandi vendors & small businesses
     </p>
 
-    <!-- Main Card -->
+    <!-- Card -->
     <div class="profit-card">
 
-      <!-- Inputs -->
+      <!-- Input Row -->
       <div class="profit-inputs">
 
+        <!-- Buying Price -->
         <div class="field">
-          <label>📉 Buying Price (₹/kg)</label>
-          <input id="buy" type="number" placeholder="Eg: 20" />
+          <label id="buyLabel">📉 Buying Price (₹/kg)</label>
+          <input type="number" id="buyPrice" placeholder="Eg: 20">
         </div>
 
+        <!-- Selling Price -->
         <div class="field">
-          <label>📈 Selling Price (₹/kg)</label>
-          <input id="sell" type="number" placeholder="Eg: 30" />
+          <label id="sellLabel">📈 Selling Price (₹/kg)</label>
+          <input type="number" id="sellPrice" placeholder="Eg: 30">
         </div>
 
+        <!-- Quantity -->
         <div class="field">
-          <label>⚖ Quantity Sold (kg/day)</label>
-          <input id="qty" type="number" placeholder="Eg: 50" />
+          <label id="qtyLabel">⚖ Quantity Sold (kg/day)</label>
+          <input type="number" id="qtySold" placeholder="Eg: 50">
         </div>
 
       </div>
 
       <!-- Button -->
-      <button class="profit-btn" onclick="calcProfit()">
+      <button class="profit-btn" onclick="calculateProfit()" id="generateBtn">
         🤖 Generate AI Profit Insight
       </button>
 
-      <!-- Output -->
-      <div id="profitOutput" class="profit-output hidden"></div>
+      <!-- Result -->
+      <div id="profitResult" class="profit-result"></div>
 
       <!-- Back -->
-      <a href="index.html" class="back-btn">⬅ Back Home</a>
+      <a href="index.html" class="back-btn" id="backBtn">
+        ⬅ Back Home
+      </a>
+
     </div>
   </div>
 
+  <!-- ==============================
+        MULTILINGUAL + PROFIT SCRIPT
+  ============================== -->
   <script>
-    function calcProfit() {
-      let buy = parseFloat(document.getElementById("buy").value);
-      let sell = parseFloat(document.getElementById("sell").value);
-      let qty = parseFloat(document.getElementById("qty").value);
+    /* ===============================
+       🌍 TRANSLATIONS
+    =============================== */
+    const translations = {
+      en: {
+        title: "💰 AI Vendor Profit Estimator",
+        subtitle: "Smart profit prediction tool for mandi vendors & small businesses",
+        buy: "📉 Buying Price (₹/kg)",
+        sell: "📈 Selling Price (₹/kg)",
+        qty: "⚖ Quantity Sold (kg/day)",
+        btn: "🤖 Generate AI Profit Insight",
+        back: "⬅ Back Home",
+        profitMsg: "✅ Estimated Profit:",
+        lossMsg: "⚠ Estimated Loss:"
+      },
+
+      hi: {
+        title: "💰 विक्रेता लाभ अनुमानक",
+        subtitle: "मंडी विक्रेताओं के लिए स्मार्ट लाभ अनुमान उपकरण",
+        buy: "📉 खरीद मूल्य (₹/kg)",
+        sell: "📈 बिक्री मूल्य (₹/kg)",
+        qty: "⚖ प्रतिदिन बिक्री मात्रा (kg)",
+        btn: "🤖 AI लाभ रिपोर्ट बनाएं",
+        back: "⬅ वापस होम",
+        profitMsg: "✅ अनुमानित लाभ:",
+        lossMsg: "⚠ अनुमानित नुकसान:"
+      },
+
+      ta: {
+        title: "💰 விற்பனையாளர் லாப கணிப்பான்",
+        subtitle: "மண்டி விற்பனையாளர்களுக்கான ஸ்மார்ட் லாப கணிப்பு கருவி",
+        buy: "📉 வாங்கும் விலை (₹/kg)",
+        sell: "📈 விற்கும் விலை (₹/kg)",
+        qty: "⚖ தினசரி விற்பனை அளவு (kg)",
+        btn: "🤖 AI லாப அறிக்கை உருவாக்கவும்",
+        back: "⬅ முகப்பு",
+        profitMsg: "✅ கணிக்கப்பட்ட லாபம்:",
+        lossMsg: "⚠ கணிக்கப்பட்ட இழப்பு:"
+      }
+    };
+
+    /* ===============================
+       APPLY LANGUAGE
+    =============================== */
+    function setLanguage() {
+      const lang = document.getElementById("langSelect").value;
+      localStorage.setItem("appLang", lang);
+
+      document.getElementById("pageTitle").innerText =
+        translations[lang].title;
+
+      document.getElementById("pageSubtitle").innerText =
+        translations[lang].subtitle;
+
+      document.getElementById("buyLabel").innerText =
+        translations[lang].buy;
+
+      document.getElementById("sellLabel").innerText =
+        translations[lang].sell;
+
+      document.getElementById("qtyLabel").innerText =
+        translations[lang].qty;
+
+      document.getElementById("generateBtn").innerText =
+        translations[lang].btn;
+
+      document.getElementById("backBtn").innerText =
+        translations[lang].back;
+    }
+
+    function loadLanguage() {
+      const saved = localStorage.getItem("appLang") || "en";
+      document.getElementById("langSelect").value = saved;
+      setLanguage();
+    }
+
+    /* ===============================
+       PROFIT CALCULATOR
+    =============================== */
+    function calculateProfit() {
+      const buy = parseFloat(document.getElementById("buyPrice").value);
+      const sell = parseFloat(document.getElementById("sellPrice").value);
+      const qty = parseFloat(document.getElementById("qtySold").value);
+
+      const lang = document.getElementById("langSelect").value;
 
       if (!buy || !sell || !qty) {
-        alert("Please fill all fields!");
+        alert("Please enter all values!");
         return;
       }
 
-      let profitPerKg = sell - buy;
-      let dailyProfit = profitPerKg * qty;
-      let margin = ((profitPerKg / buy) * 100).toFixed(1);
+      let profit = (sell - buy) * qty;
+      let resultBox = document.getElementById("profitResult");
 
-      let suggestion = "";
-
-      if (profitPerKg > 10) {
-        suggestion = "✅ Excellent margin! Stock more today.";
-      } else if (profitPerKg > 5) {
-        suggestion = "👍 Good profit. Continue selling steadily.";
-      } else if (profitPerKg > 0) {
-        suggestion = "⚠ Low margin. Try negotiating buying price.";
+      if (profit > 0) {
+        resultBox.innerHTML = `
+          <h2>${translations[lang].profitMsg}</h2>
+          <p><b>₹${profit.toFixed(2)}</b> per day</p>
+          <small>AI Tip: Increase quantity when market demand is high 📈</small>
+        `;
       } else {
-        suggestion = "❌ Loss detected. Avoid selling at this price.";
+        resultBox.innerHTML = `
+          <h2>${translations[lang].lossMsg}</h2>
+          <p><b>₹${profit.toFixed(2)}</b> per day</p>
+          <small>AI Tip: Avoid selling below buying cost ⚠</small>
+        `;
       }
-
-      document.getElementById("profitOutput").classList.remove("hidden");
-
-      document.getElementById("profitOutput").innerHTML = `
-        <h2>📊 AI Profit Report</h2>
-        <p><b>Profit per kg:</b> ₹${profitPerKg}</p>
-        <p><b>Profit Margin:</b> ${margin}%</p>
-        <p><b>Estimated Daily Profit:</b> ₹${dailyProfit}</p>
-
-        <div class="ai-suggestion">
-          🤖 AI Suggestion: <br><b>${suggestion}</b>
-        </div>
-      `;
     }
+
+    /* ===============================
+       RUN ON PAGE LOAD
+    =============================== */
+    window.onload = loadLanguage;
   </script>
 
 </body>

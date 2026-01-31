@@ -9,11 +9,22 @@
 
 <body class="home-body">
 
+  <!-- 🌍 Language Selector -->
+  <div class="lang-bar">
+    🌍 Language:
+    <select id="langSelect" onchange="setLanguage()">
+      <option value="en">English</option>
+      <option value="hi">हिंदी</option>
+      <option value="ta">தமிழ்</option>
+    </select>
+  </div>
+
+  <!-- Billing Container -->
   <div class="billing-container">
 
     <!-- Header -->
-    <h1 class="billing-title">🧾 Smart Customer Billing</h1>
-    <p class="billing-subtitle">
+    <h1 class="billing-title" id="pageTitle">🧾 Smart Customer Billing</h1>
+    <p class="billing-subtitle" id="pageSubtitle">
       Add multiple items for one customer and generate total bill instantly
     </p>
 
@@ -23,30 +34,31 @@
       <!-- Input Row -->
       <div class="billing-inputs">
 
+        <!-- Commodity Dropdown -->
         <div class="field">
-          <label>🛒 Select Item</label>
+          <label id="itemLabel">🛒 Select Item</label>
           <select id="item">
-            <option value="25">🥔 Potato (₹25/kg)</option>
-            <option value="20">🧅 Onion (₹20/kg)</option>
-            <option value="32">🍅 Tomato (₹32/kg)</option>
-            <option value="48">🌾 Rice (₹48/kg)</option>
-            <option value="85">🥣 Dal (₹85/kg)</option>
+            <option>Loading live mandi items...</option>
           </select>
         </div>
 
+        <!-- Quantity -->
         <div class="field">
-          <label>⚖ Quantity (kg)</label>
+          <label id="qtyLabel">⚖ Quantity (kg)</label>
           <input id="qty" type="number" placeholder="Enter kg" />
         </div>
 
+        <!-- Add Button -->
         <div class="field">
-          <button class="add-btn" onclick="addItem()">➕ Add Item</button>
+          <button class="add-btn" onclick="addItem()" id="addBtn">
+            ➕ Add Item
+          </button>
         </div>
 
       </div>
 
       <!-- Bill Section -->
-      <h2 class="bill-heading">📋 Current Customer Bill</h2>
+      <h2 class="bill-heading" id="billHeading">📋 Current Customer Bill</h2>
 
       <div class="bill-box">
         <ul id="billList"></ul>
@@ -58,66 +70,170 @@
       </div>
 
       <!-- Print Button -->
-      <button class="print-btn" onclick="window.print()">
+      <button class="print-btn" onclick="window.print()" id="printBtn">
         🖨 Print Invoice
       </button>
 
       <!-- Buttons -->
       <div class="billing-actions">
-        <button class="new-btn" onclick="newCustomer()">🆕 New Customer</button>
-        <a href="index.html" class="back-btn">⬅ Back Home</a>
+        <button class="new-btn" onclick="newCustomer()" id="newBtn">
+          🆕 New Customer
+        </button>
+
+        <a href="index.html" class="back-btn" id="backBtn">
+          ⬅ Back Home
+        </a>
       </div>
 
     </div>
   </div>
 
-  <!-- Script -->
+  <!-- ==============================
+        SCRIPT (LIVE + MULTILINGUAL)
+  ============================== -->
   <script>
     let total = 0;
+    let currentPrices = {};
 
+    /* ===============================
+       🌍 TRANSLATION DICTIONARY
+    =============================== */
+    const translations = {
+      en: {
+        title: "🧾 Smart Customer Billing",
+        subtitle: "Add multiple items for one customer and generate total bill instantly",
+        selectItem: "🛒 Select Item",
+        quantity: "⚖ Quantity (kg)",
+        add: "➕ Add Item",
+        bill: "📋 Current Customer Bill",
+        print: "🖨 Print Invoice",
+        newCustomer: "🆕 New Customer",
+        back: "⬅ Back Home"
+      },
+      hi: {
+        title: "🧾 स्मार्ट ग्राहक बिलिंग",
+        subtitle: "एक ग्राहक के लिए कई वस्तुएं जोड़ें और तुरंत बिल बनाएं",
+        selectItem: "🛒 वस्तु चुनें",
+        quantity: "⚖ मात्रा (किलो)",
+        add: "➕ जोड़ें",
+        bill: "📋 ग्राहक का बिल",
+        print: "🖨 बिल प्रिंट करें",
+        newCustomer: "🆕 नया ग्राहक",
+        back: "⬅ वापस होम"
+      },
+      ta: {
+        title: "🧾 ஸ்மார்ட் வாடிக்கையாளர் பில்லிங்",
+        subtitle: "ஒரே வாடிக்கையாளருக்கு பல பொருட்கள் சேர்த்து உடனே பில் உருவாக்கவும்",
+        selectItem: "🛒 பொருள் தேர்வு",
+        quantity: "⚖ அளவு (கிலோ)",
+        add: "➕ சேர்க்கவும்",
+        bill: "📋 தற்போதைய பில்",
+        print: "🖨 பில் அச்சிடு",
+        newCustomer: "🆕 புதிய வாடிக்கையாளர்",
+        back: "⬅ முகப்பு"
+      }
+    };
+
+    /* ===============================
+       🌍 APPLY LANGUAGE
+    =============================== */
+    function setLanguage() {
+      const lang = document.getElementById("langSelect").value;
+      localStorage.setItem("appLang", lang);
+
+      document.getElementById("pageTitle").innerText = translations[lang].title;
+      document.getElementById("pageSubtitle").innerText = translations[lang].subtitle;
+      document.getElementById("itemLabel").innerText = translations[lang].selectItem;
+      document.getElementById("qtyLabel").innerText = translations[lang].quantity;
+      document.getElementById("addBtn").innerText = translations[lang].add;
+      document.getElementById("billHeading").innerText = translations[lang].bill;
+      document.getElementById("printBtn").innerText = translations[lang].print;
+      document.getElementById("newBtn").innerText = translations[lang].newCustomer;
+      document.getElementById("backBtn").innerText = translations[lang].back;
+    }
+
+    function loadLanguage() {
+      const saved = localStorage.getItem("appLang") || "en";
+      document.getElementById("langSelect").value = saved;
+      setLanguage();
+    }
+
+    /* ===============================
+       ✅ LOAD LIVE PRICES FROM SERVER
+    =============================== */
+    async function loadBillingItems() {
+      const dropdown = document.getElementById("item");
+
+      try {
+        const res = await fetch("/billing-items");
+        const data = await res.json();
+
+        dropdown.innerHTML = "";
+
+        data.forEach((item) => {
+          currentPrices[item.name] = item.price;
+
+          const opt = document.createElement("option");
+          opt.value = item.name;
+          opt.textContent = `${item.name} (₹${item.price}/quintal)`;
+
+          dropdown.appendChild(opt);
+        });
+
+      } catch (err) {
+        dropdown.innerHTML = "<option>Error loading prices</option>";
+      }
+    }
+
+    /* ===============================
+       ✅ BILLING FUNCTION
+    =============================== */
     function addItem() {
-      let itemDropdown = document.getElementById("item");
-      let price = parseInt(itemDropdown.value);
-
-      let itemName =
-        itemDropdown.options[itemDropdown.selectedIndex].text;
-
+      let itemName = document.getElementById("item").value;
       let qty = parseFloat(document.getElementById("qty").value);
 
       if (!qty || qty <= 0) {
-        alert("⚠ Please enter a valid quantity!");
+        alert("Enter valid quantity!");
         return;
       }
 
-      let cost = price * qty;
+      let price = currentPrices[itemName];
+
+      // Convert quintal → kg
+      let perKgPrice = price / 100;
+
+      let cost = perKgPrice * qty;
       total += cost;
 
-      // Add item row
       let li = document.createElement("li");
       li.innerHTML = `
         <span>${itemName}</span>
         <span>${qty} kg</span>
-        <span>₹${cost}</span>
+        <span>₹${cost.toFixed(2)}</span>
       `;
 
       document.getElementById("billList").appendChild(li);
 
-      // Update total
       document.getElementById("totalBill").innerText =
-        "Total: ₹" + total;
+        "Total: ₹" + total.toFixed(2);
 
-      // Clear quantity input
       document.getElementById("qty").value = "";
     }
 
     function newCustomer() {
       total = 0;
       document.getElementById("billList").innerHTML = "";
-      document.getElementById("totalBill").innerText =
-        "Total: ₹0";
-
+      document.getElementById("totalBill").innerText = "Total: ₹0";
       alert("✅ New customer bill started!");
     }
+
+    /* ===============================
+       RUN ON PAGE LOAD
+    =============================== */
+    window.onload = () => {
+      loadLanguage();
+      loadBillingItems();
+    };
   </script>
 
 </body>
